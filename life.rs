@@ -1,10 +1,13 @@
-static GRID_SIZE: uint = 10;
+use std::path::Path;
+use std::io;
+
+static GRID_SIZE: uint = 10 + 1;
 static GRID_MAX_INDEX: uint = GRID_SIZE - 1;
 
 #[deriving(Eq)]
 enum CellValue {
   alive, dead
-}
+}  // enum CellValue
 
 struct Cell {
   cv: CellValue,
@@ -17,18 +20,17 @@ impl Cell {
     This fn prints to std::io indicating whether the cell is alive or dead.
   */
   fn print(&self) {
-    //print(fmt!("%u", *self.row));
     match self.cv {
       alive => print("O"),
       dead  => print("X") 
     }
-  }
+  }  // fn print
   /*
     Standard ctor, returns an 'alive' cell.
   */
   fn new(row_param: Row, col_param: Column) -> Cell {
-    Cell { cv: alive, row: row_param, column: col_param } 
-  }
+    Cell { cv: dead, row: row_param, column: col_param } 
+  } // fn new
   
   /*
     This fn flips the value from dead => alive, or visa versa.
@@ -36,6 +38,28 @@ impl Cell {
   fn flip(&mut self) -> () {
     self.cv = match self.cv { alive => dead, dead => alive };
   }  // fn flip
+  
+  /*
+    This fn set's the cell's status to 'alive'
+  */
+  fn set_alive(&mut self) -> () {
+    self.cv = alive;
+  }  // fn set_alive
+
+  /*
+    This fn sets the cell's status to 'dead'
+  */
+  fn set_dead(&mut self) -> () {
+    self.cv = dead;
+  }  // fn set_dead
+
+  fn alive(&self) -> bool {
+    return self.cv == alive;
+  }  // fn alive
+
+  fn dead(&self) -> bool {
+    return self.cv == dead;
+  }
 }  // impl Cell
 
 struct Row(uint);
@@ -43,21 +67,9 @@ struct Column(uint);
 
 struct Grid {
   priv inner: [ [Cell, .. GRID_SIZE], ..GRID_SIZE],
-}
+}  // struct Grid
 
 impl Grid {
-
-  /*
-    Invokes an arbitrary fn on each cell.
-  */
-  fn each_cell(&self, function: &fn()) {
-    let grid = &self.inner;
-    for outer in grid.iter() {
-      for _ in outer.iter() {
-        function();  
-      }
-    }
-  }  // fn each
   /*
     Invokes print on each cell, separating rows with newlines.
   */
@@ -90,16 +102,21 @@ impl Grid {
     } // 'for o' loop
     result
   }  // fn new
-  /*
-    This fn flips the value from dead => alive, or visa versa.
-  */
-  fn flip_cell(& mut self, col: Column, row: Row) {
-    println(fmt!("w %u h %u", *col, *row));
+
+  fn kill_cell(&mut self, col: Column, row: Row) {
     assert!(*col < GRID_MAX_INDEX && *row < GRID_MAX_INDEX);
     assert!(*row < GRID_MAX_INDEX);
-    // Delegate how to flip to the cell itself.
-    self.inner[*col][*row].flip();
-  }  // fn flip_cell
+    // Delegate how to kill to the cell itself.
+    self.inner[*col][*row].set_dead();
+  }  // fn kill_cell
+
+ fn birth_cell(&mut self, col: Column, row: Row) {
+    assert!(*col < GRID_MAX_INDEX && *row < GRID_MAX_INDEX);
+    assert!(*row < GRID_MAX_INDEX);
+    // Delegate how to kill to the cell itself.
+    self.inner[*col][*row].set_alive();
+  }  // fn birth_cell
+    
 
   /*
     Returns a reference to the cell just to the right
@@ -161,10 +178,7 @@ impl Grid {
   */
   fn count_dead_neighbors(&self, col: Column, row: Row) -> uint {
     let check_cell = |cell: &Cell| -> uint {
-      match cell.cv {
-        alive => 1,
-        dead => 0
-      }
+      match cell.cv { alive => 0, dead => 1 }
     };
 
     let arr = [
@@ -184,24 +198,107 @@ impl Grid {
       }
       aggregate
     };
-
     return accumulator(arr);
   }  // fn count_dead_neighbors
 }
 
-fn main () {
-  let mut gr: Grid = Grid::new();
-  gr.flip_cell(Column(0), Row(0));
+fn step(grid: Grid, cell: &Cell) -> Grid {
+  let mut copy = grid;
+  let dead_neighbor_count = copy.count_dead_neighbors(cell.column, cell.row);
 
-  for outer in gr.inner.iter() {
-    for &inner in outer.iter() {
-      let dead_neighbor_count = gr.count_dead_neighbors(Column(0), Row(0));
-      if (dead_neighbor_count < 2) {
-        inner.flip();
-      }
-    }
+  if (cell.alive() && dead_neighbor_count < 2) {
+    copy.kill_cell(cell.column, cell.row)
+  }
+  else if (cell.alive() && (dead_neighbor_count == 2 || dead_neighbor_count == 3)) {
+    // live long and prosper
+  }
+  else if (cell.alive() && dead_neighbor_count > 3) {
+    copy.kill_cell(cell.column, cell.row);
+  }
+  else if (cell.dead() && dead_neighbor_count == 3) {
+    copy.birth_cell(cell.column, cell.row);
   }
 
-  let dead_count = gr.count_dead_neighbors(Column(0), Row(0));
-  print(fmt!("%u", dead_count));
-}
+/*
+    if (dead_neighbor_count < 2) {
+      println("killing");
+      copy.kill_cell(cell.column, cell.row);
+    }
+    else if (dead_neighbor_count == 2 || dead_neighbor_count == 3) {
+      println("birthing cell");
+      copy.birth_cell(cell.column, cell.row);
+    } else if (dead_neighbor_count > 3) {
+      println("killing");
+      copy.kill_cell(cell.column, cell.row);
+    }
+    else if (dead_neighbor_count == 3 && cell.cv == dead) {
+      println("birthing cell");
+      copy.birth_cell(cell.column, cell.row);
+    }
+  } // outer if 
+  else if (dead_neighbor_count == 3) {
+    println("birthing cell");
+    copy.birth_cell(cell.column, cell.row);
+  }
+*/
+
+  return copy; 
+}  // fn step
+
+fn read_all_lines(path: &Path) -> ~[~str] {
+  match io::file_reader(path) {
+    Ok(file) => file.read_lines(),
+    Err(e) => fail!(fmt!("Error reading file: %?", e))
+  }
+}  // fn read_all_lines
+
+fn tick(grid_param: Grid) -> Grid {
+  let mut grid_copy: Grid = grid_param;
+  for outer in grid_param.inner.iter() {
+    for inner in outer.iter() {
+      grid_copy = step(grid_copy, inner);
+    }  // l'inner'
+  }    // l'outer'
+  return grid_copy;
+}  // fn tick
+
+fn main () {
+  let mut gr: Grid = Grid::new();
+
+  let lines = read_all_lines(&Path("./example.txt"));
+  assert!(lines.len() > 0);
+  let line_length = lines[0].len();
+
+  for line in lines.iter() {
+    println(fmt!("%s", *line));
+    println(fmt!("line_length %u, line.len() %u", line_length, line.len()));
+    assert!(line_length == line.len());
+  }  // l'line'
+
+  let mut outerc = 0u;
+  for outer in lines.iter() {
+    let mut innerc = 0u;
+    for letter in outer.iter() {
+      if (letter == 'X') {
+        gr.kill_cell(Column(outerc), Row(innerc));
+      } else if (letter == 'O') {
+        gr.birth_cell(Column(outerc), Row(innerc));
+      }
+      innerc += 1u;
+    } // l'inner'
+    outerc += 1u;
+  } // l'outer'
+
+  println("-----");
+  gr.print();
+  println("-----");
+
+  loop {
+    gr = tick(gr);
+    gr.print();
+    
+    let stdin = std::io::stdin();
+    stdin.read_line();
+    println("------------------ \n\n");
+  }
+} // fn main
