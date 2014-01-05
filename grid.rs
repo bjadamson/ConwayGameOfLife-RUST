@@ -1,10 +1,8 @@
-#[deriving(Eq)]
 #[deriving(Clone)]
 pub enum CellValue {
   alive, dead
 }  // enum CellValue
 
-#[deriving(Eq)]
 #[deriving(Clone)]
 pub struct Cell {
   value: CellValue
@@ -22,7 +20,6 @@ fn print(&self) {
 pub struct Row(uint);
 pub struct Column(uint);
 
-#[deriving(Eq)]
 #[deriving(Clone)]
 pub struct Grid {
   inner: ~[~[Cell]]
@@ -30,9 +27,9 @@ pub struct Grid {
 
 impl Grid {
 pub fn print(&self) {
-  for rows in self.inner.iter() {
-    for column in rows.iter() {
-      column.print();
+  for row in range(0, self.height()) {
+    for column in range(0, self.width()) {
+      self.inner[row][column].print();
     }
     println!("");
   }
@@ -46,11 +43,11 @@ pub fn cell_alive(&self, Row(row): Row, Column(column): Column) -> uint {
 }
 
 pub fn width(&self) -> uint {
-  return self.height();
+  return self.inner[0].len();
 }  // fn width
 
 pub fn height(&self) -> uint {
-  return self.inner.len() - 1;
+  return self.inner.len();
 }  // fn height
 
 }  // impl Grid
