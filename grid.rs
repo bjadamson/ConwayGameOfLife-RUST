@@ -13,8 +13,8 @@ pub struct Cell {
 impl Cell {
 fn print(&self) {
   match self.value {
-    alive => print("x"),
-    dead  => print(".")
+    alive => print!("x"),
+    dead  => print!(".")
   }
 }  // fn print
 }  // impl Cell
@@ -34,7 +34,7 @@ pub fn print(&self) {
     for column in rows.iter() {
       column.print();
     }
-    print("\n");
+    println!("");
   }
 }  // fn print
 

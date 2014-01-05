@@ -124,9 +124,9 @@ pub fn print_neighbor_count(grid: &grid::Grid) {
       let r = grid::Row(row);
       let c = grid::Column(column);
       let n = count_neighbors(r, c, grid);
-      print(format!("{:u}", n));
+      print!("{:u}", n);
     }
-    print("\n");
+    println!("");
   }
 }  // fn print_neighbor_count
 
