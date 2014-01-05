@@ -38,8 +38,8 @@ pub fn print(&self) {
   }
 }  // fn print
 
-pub fn cell_alive(&self, row: Row, column: Column) -> uint {
-  return match self.inner[*row][*column].value {
+pub fn cell_alive(&self, Row(row): Row, Column(column): Column) -> uint {
+  return match self.inner[row][column].value {
    dead  => 0,
    alive => 1
   };

@@ -44,36 +44,36 @@ fn neighbor_pos(row: grid::Row, column: grid::Column, dir: direction,
     grid: &grid::Grid) -> (grid::Row, grid::Column)
 {
   // Will always return the same row
-  let right_neighbor = |column: grid::Column, grid: &grid::Grid|
+  let right_neighbor = |grid::Column(column): grid::Column, grid: &grid::Grid|
       -> (grid::Row, grid::Column) {
-    return match *column {
+    return match column {
       c if (grid.width() == c) => (row, grid::Column(0)), // Wrap around right.
       c                        => (row, grid::Column(c + 1)) // One to the left.
     };
   };
 
   // Will always return the same row
-  let left_neighbor = |column: grid::Column, grid: &grid::Grid|
+  let left_neighbor = |grid::Column(column): grid::Column, grid: &grid::Grid|
       -> (grid::Row, grid::Column) {
-    return match *column {
+    return match column {
       0 => (row, grid::Column(grid.width() - 1)), // One to the left.
       c => (row, grid::Column(c - 1))            // Wrap around to the right.
     };
   };
   
   // Will always return the same column
-  let above_neighbor = |row: grid::Row, grid: &grid::Grid|
+  let above_neighbor = |grid::Row(row): grid::Row, grid: &grid::Grid|
       -> (grid::Row, grid::Column) {
-    return match *row {
+    return match row {
       0 => (grid::Row(grid.height()), column),  // Wrap around to bottom.
       r => (grid::Row(r - 1), column)           // One above.
     };
   };
 
   // Will always return the same column
-  let below_neighbor = |row: grid::Row, grid: &grid::Grid|
+  let below_neighbor = |grid::Row(row): grid::Row, grid: &grid::Grid|
       -> (grid::Row, grid::Column) {
-    return match *row {
+    return match row {
       r if (r == grid.height()) => (grid::Row(0), column),    // Wrap around to top.
       r                         => (grid::Row(r + 1), column) // One below.
     };
@@ -130,21 +130,40 @@ pub fn print_neighbor_count(grid: &grid::Grid) {
   }
 }  // fn print_neighbor_count
 
+// 1)Any live cell with fewer than two live neighbours dies, as if caused by
+// under-population.
+// 2) Any live cell with two or three live neighbours lives on to the next
+// generation.
+// 3) Any live cell with more than three live neighbours dies, as if by
+// overcrowding.
+// 4) Any dead cell with exactly three live neighbours becomes a live cell, as
+// if by reproduction.
 
-/*pub fn build_from_grid(other: &grid::Grid) -> grid::Grid
+pub fn build_from_grid(other: &grid::Grid) -> grid::Grid
 {
   let mut result = other.clone();
   let size = result.inner.len();
 
   for row in range(0, size) {
     for column in range(0, size) {
-
-      //let neighbors = count_neighbors(row, column, &other);
-      //let alive_neighbor_count = other.inner[row][column].count;
-      // IMPLEMENT transformation rules
-      //result.inner[row][column] = grid::Cell { value: cell_value };
-   }
+      let ncount = count_neighbors(grid::Row(row), grid::Column(column),
+          other);
+      result.inner[row][column] = grid::Cell { value: 
+        match other.inner[row][column].value {
+          grid::dead => 
+            match ncount {
+              3 => grid::alive,
+              _ => grid::dead
+            },
+          grid::alive =>
+            match ncount {
+              0..1 => grid::dead,
+              2..3 => grid::alive,
+              _    => grid::dead
+            },
+        }
+      };
+    }
   }
   return result;
 }  // fn build_from_grid
-*/
