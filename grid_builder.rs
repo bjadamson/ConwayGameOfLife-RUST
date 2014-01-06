@@ -117,7 +117,7 @@ pub fn count_neighbors(row: grid::Row, column: grid::Column, grid: &grid::Grid)
   return c0 + c1 + c2 + c3 + c4 + c5 + c6 + c7;
 }
 
-pub fn print_neighbor_count(grid: &grid::Grid) {
+/*pub fn print_neighbor_count(grid: &grid::Grid) {
   let x = grid.inner.len();
   for row in range(0, x) {
     for column in range(0, x) {
@@ -129,6 +129,7 @@ pub fn print_neighbor_count(grid: &grid::Grid) {
     println!("");
   }
 }  // fn print_neighbor_count
+*/
 
 // 1)Any live cell with fewer than two live neighbours dies, as if caused by
 // under-population.
