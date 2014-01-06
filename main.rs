@@ -34,9 +34,11 @@ fn main() {
   let grid_from_file = grid_builder::build_from_file_contents(lines);
   grid_from_file.print();
 
+  let mut timer = match Timer::new() {
+    Some(t) => t,
+    None() => fail!("Error creating timer.")
+  };
   let mut next = grid_from_file;
-  let mut timer = Timer::new().unwrap();
- 
   
   loop {
     timer.sleep(1000);
