@@ -139,15 +139,15 @@ pub fn count_neighbors(row: grid::Row, column: grid::Column, grid: &grid::Grid)
 // overcrowding.
 // 4) Any dead cell with exactly three live neighbours becomes a live cell, as
 // if by reproduction.
-pub fn build_from_grid(other: &grid::Grid) -> grid::Grid
+pub fn build_from_grid(prevg: &grid::Grid) -> grid::Grid
 {
-  let mut result = other.clone();
-  for row in range(0, other.height()) {
-    for column in range(0, other.width()) {
+  let mut result = prevg.clone();
+  for row in range(0, prevg.height()) {
+    for column in range(0, prevg.width()) {
       let ncount = count_neighbors(grid::Row(row), grid::Column(column),
-          other);
+          prevg);
       result.inner[row][column] = grid::Cell { value: 
-        match other.inner[row][column].value {
+        match prevg.inner[row][column].value {
           grid::dead => 
             match ncount {
               3 => grid::alive,

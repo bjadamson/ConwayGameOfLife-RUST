@@ -24,6 +24,8 @@ fn main() {
   let path = &Path::new(filename.as_slice());
   let mut reader = BufferedReader::new(File::open(path));
 
+  // todo: I'm not sure how to handle a failure to open the file ..
+
   // todo: understand why to_owned() is necessary here
   // also, is it really smart that lines() returns newlines? why?
   let lines: ~[~str] = reader.lines()
@@ -42,7 +44,7 @@ fn main() {
   let mut next = grid_from_file;
   
   loop {
-    timer.sleep(1000);
+    timer.sleep(100);
     next = grid_builder::build_from_grid(&next);
     println!("");
     next.print();
