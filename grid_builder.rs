@@ -41,50 +41,14 @@ enum direction {
 /*
   Calculates the neighbor's position given the inputs.
 */
-fn neighbor_pos(row: grid::Row, column: grid::Column, dir: direction,
+fn neighbor_pos(grid::Row(row): grid::Row, grid::Column(column): grid::Column, dir: direction,
     grid: &grid::Grid) -> (grid::Row, grid::Column)
 {
-  // Will always return the same row
-  let right_neighbor = |grid::Column(column): grid::Column, grid: &grid::Grid|
-      -> (grid::Row, grid::Column) {
-    return match column {
-      c if (grid.width() - 1 == c) => (row, grid::Column(0)), // Wrap around.
-      c                            => (row, grid::Column(c + 1)) // One left.
-    };
-  };
-
-  // Will always return the same row
-  let left_neighbor = |grid::Column(column): grid::Column, grid: &grid::Grid|
-      -> (grid::Row, grid::Column) {
-    return match column {
-      0 => (row, grid::Column(grid.width() - 1)), // One left.
-      c => (row, grid::Column(c - 1))            // Wrap around.
-    };
-  };
-  
-  // Will always return the same column
-  let above_neighbor = |grid::Row(row): grid::Row, grid: &grid::Grid|
-      -> (grid::Row, grid::Column) {
-    return match row {
-      0 => (grid::Row(grid.height() - 1), column),  // Wrap around.
-      r => (grid::Row(r - 1), column)               // One above.
-    };
-  };
-
-  // Will always return the same column
-  let below_neighbor = |grid::Row(row): grid::Row, grid: &grid::Grid|
-      -> (grid::Row, grid::Column) {
-    return match row {
-      r if (r == grid.height() - 1) => (grid::Row(0), column),   // Wrap around.
-      r                             => (grid::Row(r + 1), column)// One below.
-    };
-  };
-
   return match dir {
-    above => above_neighbor(row, grid),
-    below => below_neighbor(row, grid),
-    right => right_neighbor(column, grid),
-    left  => left_neighbor(column, grid)
+    above => (grid::Row(row - 1), grid::Column(column)),
+    below => (grid::Row(row + 1), grid::Column(column)),
+    right => (grid::Row(row), grid::Column(column + 1)),
+    left  => (grid::Row(row), grid::Column(column - 1))
   };
 }  // fn neighbor_pos
 
