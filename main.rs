@@ -23,13 +23,14 @@ fn main() {
 
   let path = &Path::new(filename.as_slice());
   let mut reader = BufferedReader::new(File::open(path));
-  let line = reader.read_line();
 
   // todo: understand why to_owned() is necessary here
   // also, is it really smart that lines() returns newlines? why?
   let lines: ~[~str] = reader.lines()
       .map(|x| x.trim().to_owned())
       .collect();
+
+  println!("lines size {:u}", lines.len());
     
   let grid_from_file = grid_builder::build_from_file_contents(lines);
   grid_from_file.print();
