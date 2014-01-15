@@ -11,18 +11,15 @@ mod grid;
 
 fn main() {
   let args = os::args();
-  assert_eq!(2, args.len());
+  let path = match args {
+    [_, filename, ..] => {
+      println!("Opening file {:s}", filename);
+      Path::new(filename)
+    },
+    _                 => fail!("Could not open file :(")
+  };
 
-  let arg_vec = args.iter()
-    .skip(1)  // Skip program's name.
-    .take(1)
-    .to_owned_vec(); // I don't know if this is the best way in rust.
-
-  let filename = arg_vec.head(); // It won't let me chain head() (idk why YET!)
-  println!("Opening file {:s}", filename.as_slice());
-
-  let path = &Path::new(filename.as_slice());
-  let mut reader = BufferedReader::new(File::open(path));
+  let mut reader = BufferedReader::new(File::open(&path));
 
   // todo: I'm not sure how to handle a failure to open the file ..
 
@@ -37,10 +34,8 @@ fn main() {
   let grid_from_file = grid_builder::build_from_file_contents(lines);
   grid_from_file.print();
 
-  let mut timer = match Timer::new() {
-    Some(t) => t,
-    None() => fail!("Error creating timer.")
-  };
+  // The fn expect() is shorthand for pattern matching on Some/None.
+  let mut timer = Timer::new().expect("Error creating timer!!");
   let mut next = grid_from_file;
   
   loop {

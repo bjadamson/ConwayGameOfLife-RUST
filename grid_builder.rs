@@ -108,21 +108,12 @@ pub fn build_from_grid(prevg: &grid::Grid) -> grid::Grid
   let mut result = prevg.clone();
   for row in range(0, prevg.height()) {
     for column in range(0, prevg.width()) {
-      let ncount = count_neighbors(grid::Row(row), grid::Column(column),
-          prevg);
+      let ncount = count_neighbors(grid::Row(row), grid::Column(column), prevg);
       result.inner[row][column] = grid::Cell { value: 
-        match prevg.inner[row][column].value {
-          grid::dead => 
-            match ncount {
-              3 => grid::alive,
-              _ => grid::dead
-            },
-          grid::alive =>
-            match ncount {
-              0..1 => grid::dead,
-              2..3 => grid::alive,
-              _    => grid::dead
-            },
+        match (prevg.inner[row][column].value, ncount) {
+          (grid::dead, 3)     => grid::alive,
+          (grid::alive, 2..3) => grid::alive,
+          _                   => grid::dead
         }
       };
     }
