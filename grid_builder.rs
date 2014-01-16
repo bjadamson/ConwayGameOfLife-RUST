@@ -11,8 +11,7 @@ mod grid;
  * Constructs an immutable grid from the contents of an array of strings.
  * The grid is declared mutable, and mutated only inside this fn.
 */
-pub fn build_from_file_contents(file_contents: ~[~str]) -> Grid
-{
+pub fn build_from_file_contents(file_contents: ~[~str]) -> Grid {
   let height = file_contents.len();
   assert!(height > 0u);
   let width = file_contents[0].len();
@@ -79,8 +78,7 @@ fn count_neighbors(Row(row): Row, Column(col): Column, grid: &Grid) -> uint {
 // overcrowding.
 // 4) Any dead cell with exactly three live neighbours becomes a live cell, as
 // if by reproduction.
-pub fn build_from_grid(prevg: &Grid) -> Grid
-{
+pub fn build_from_grid(prevg: &Grid) -> Grid {
   let cell_value = |row: uint, column: uint| {
     let ncount = count_neighbors(Row(row), Column(column), prevg);
     let cv = match (prevg.inner[row][column].value, ncount) {
