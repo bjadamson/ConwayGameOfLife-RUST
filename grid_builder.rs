@@ -35,52 +35,27 @@ pub fn build_from_file_contents(file_contents: ~[~str]) -> Grid
   return result;
 } // fn build_from_file_contents
 
-enum direction {
-  above, below, left, right
-}  // enum CellValue
-
 /*
-  Calculates the neighbor's position given the inputs.
+ Returns a count for how many neighbors of a cell in the grid
+ are alive.
+ Starts to the cell to the left of the cell/row and sums up cell_alive
+ working in clockwise order.
 */
-fn neighbor_pos(Row(row): Row, Column(column): Column, dir: direction)
-    -> (Row, Column)
-{
-  return match dir {
-    above => (Row(row - 1), Column(column)),
-    below => (Row(row + 1), Column(column)),
-    right => (Row(row), Column(column + 1)),
-    left  => (Row(row), Column(column - 1))
-  };
-}  // fn neighbor_pos
+fn count_neighbors(Row(row): Row, Column(col): Column, grid: &Grid) -> uint {
+  let left_column  = Column(col - 1);
+  let right_column = Column(col + 1);
+  let above_row    = Row(row - 1);
+  let below_row    = Row(row + 1);
 
-/*
- * Returns a count for how many neighbors of a cell in the grid
- * are alive.
-*/
-pub fn count_neighbors(row: Row, column: Column, grid: &Grid)
-    -> uint
-{
-  let (same_row, left_column)  = neighbor_pos(row, column, left);
-  let (same_row, right_column) = neighbor_pos(row, column, right);
-  let (above_row, same_column) = neighbor_pos(row, column, above);
-  let (below_row, same_column) = neighbor_pos(row, column, below);
-
-  let (above_left_row, above_left_column) = neighbor_pos(above_row, same_column, left);
-  let (above_right_row, above_right_column) = neighbor_pos(above_row, same_column, right);
-  let (below_left_row, below_left_column) = neighbor_pos(below_row, same_column, left);
-  let (below_right_row, below_right_column) = neighbor_pos(below_row, same_column, right);
-
-  let c0 = grid.cell_alive(same_row, left_column);
-  let c1 = grid.cell_alive(same_row, right_column);
-  let c2 = grid.cell_alive(above_row, same_column);
-  let c3 = grid.cell_alive(below_row, same_column);
-
-  let c4 = grid.cell_alive(above_left_row, above_left_column);
-  let c5 = grid.cell_alive(above_right_row, above_right_column);
-  let c6 = grid.cell_alive(below_left_row, below_left_column);
-  let c7 = grid.cell_alive(below_right_row, below_right_column);
-  return c0 + c1 + c2 + c3 + c4 + c5 + c6 + c7;
-}
+  return grid.cell_alive(Row(row), left_column) + // left
+      grid.cell_alive(above_row, left_column)   + // left-above
+      grid.cell_alive(above_row, Column(col))   + // above
+      grid.cell_alive(above_row, right_column)  + // above-right
+      grid.cell_alive(Row(row), right_column)   + // right
+      grid.cell_alive(below_row, right_column)  + // below-right
+      grid.cell_alive(below_row, Column(col))   + // below
+      grid.cell_alive(below_row, left_column);    // below-left
+}  // fn count_neighbors
 
 /*pub fn print_neighbor_count(grid: &Grid) {
   let x = grid.inner.len();
