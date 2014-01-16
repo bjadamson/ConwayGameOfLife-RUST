@@ -1,5 +1,5 @@
 extern mod extra;
-use std::vec::from_elem;
+extern mod std;
 use grid::{Row, Column, alive, dead, Cell, Grid};
 mod grid;
 
@@ -15,10 +15,10 @@ pub fn build_from_file_contents(file_contents: ~[~str]) -> Grid {
   let height = file_contents.len();
   assert!(height > 0u);
   let width = file_contents[0].len();
-  let cells = from_elem(width, Cell { value: alive } );
+  let cells = std::vec::from_elem(width, Cell { value: alive } );
 
   let mut result = Grid {
-      inner: from_elem(height, cells.clone())
+      inner: std::vec::from_elem(height, cells.clone())
   };
   for row in range(0, height) {
     for column in range(0, width) {
@@ -88,11 +88,11 @@ pub fn build_from_grid(prevg: &Grid) -> Grid {
     };
     return Cell { value: cv };
   };
-  let mut result = prevg.clone();
-  for row in range(0, prevg.height()) {
-    for column in range(0, prevg.width()) {
-      result.inner[row][column] = cell_value(row, column);
-    }
-  }
-  return result;
+  return Grid {
+    inner: std::vec::from_fn(prevg.height(), |row| {
+      std::vec::from_fn(prevg.width(), |column| {
+        cell_value(row, column)
+      })
+    })
+  };
 }  // fn build_from_grid
