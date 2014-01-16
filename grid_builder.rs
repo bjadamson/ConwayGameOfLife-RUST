@@ -9,29 +9,28 @@ mod grid;
 
 /*
  * Constructs an immutable grid from the contents of an array of strings.
- * The grid is declared mutable, and mutated only inside this fn.
 */
 pub fn build_from_file_contents(file_contents: ~[~str]) -> Grid {
   let height = file_contents.len();
   assert!(height > 0u);
   let width = file_contents[0].len();
-  let cells = std::vec::from_elem(width, Cell { value: alive } );
-
-  let mut result = Grid {
-      inner: std::vec::from_elem(height, cells.clone())
+  assert!(width > 0u);
+  let cell_value = |file_value| {
+    return match file_value {
+      'o' => alive,
+      '.' => dead,
+       _  => fail!("Unexpected cell value found in file.")
+    };
   };
-  for row in range(0, height) {
-    for column in range(0, width) {
-      let file_value: char = file_contents[row][column] as char;
-      let cell_value = match file_value {
-        'o' => alive,
-        '.' => dead,
-         _  => fail!("Unexpected cell value found in file.")
-      };
-      result.inner[row][column] = Cell { value: cell_value };
-   }
-  }
-  return result;
+  return Grid {
+    inner: std::vec::from_fn(height, |row| {
+      std::vec::from_fn(width, |column| {
+        assert_eq!(width, file_contents[row].len());
+        let file_value = file_contents[row][column];
+        return Cell { value: cell_value(file_value as char) };
+      })
+    })
+  };
 } // fn build_from_file_contents
 
 /*
@@ -55,20 +54,6 @@ fn count_neighbors(Row(row): Row, Column(col): Column, grid: &Grid) -> uint {
       grid.cell_alive(below_row, Column(col))   + // below
       grid.cell_alive(below_row, left_column);    // below-left
 }  // fn count_neighbors
-
-/*pub fn print_neighbor_count(grid: &Grid) {
-  let x = grid.inner.len();
-  for row in range(0, x) {
-    for column in range(0, x) {
-      let r = Row(row);
-      let c = Column(column);
-      let n = count_neighbors(r, c, grid);
-      print!("{:u}", n);
-    }
-    println!("");
-  }
-}  // fn print_neighbor_count
-*/
 
 // 1)Any live cell with fewer than two live neighbours dies, as if caused by
 // under-population.
