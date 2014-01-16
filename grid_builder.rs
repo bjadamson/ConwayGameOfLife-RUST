@@ -1,5 +1,6 @@
 extern mod extra;
 use std::vec::from_elem;
+use grid::{Row, Column, alive, dead, Cell, Grid};
 mod grid;
 
 /****************************************************************************
@@ -10,25 +11,25 @@ mod grid;
  * Constructs an immutable grid from the contents of an array of strings.
  * The grid is declared mutable, and mutated only inside this fn.
 */
-pub fn build_from_file_contents(file_contents: ~[~str]) -> grid::Grid
+pub fn build_from_file_contents(file_contents: ~[~str]) -> Grid
 {
   let height = file_contents.len();
   assert!(height > 0u);
   let width = file_contents[0].len();
-  let cells = from_elem(width, grid::Cell { value: grid::alive } );
+  let cells = from_elem(width, Cell { value: alive } );
 
-  let mut result = grid::Grid {
+  let mut result = Grid {
       inner: from_elem(height, cells.clone())
   };
   for row in range(0, height) {
     for column in range(0, width) {
       let file_value: char = file_contents[row][column] as char;
       let cell_value = match file_value {
-        'o' => grid::alive,
-        '.' => grid::dead,
+        'o' => alive,
+        '.' => dead,
          _  => fail!("Unexpected cell value found in file.")
       };
-      result.inner[row][column] = grid::Cell { value: cell_value };
+      result.inner[row][column] = Cell { value: cell_value };
    }
   }
   return result;
@@ -41,14 +42,14 @@ enum direction {
 /*
   Calculates the neighbor's position given the inputs.
 */
-fn neighbor_pos(grid::Row(row): grid::Row, grid::Column(column): grid::Column, dir: direction,
-    grid: &grid::Grid) -> (grid::Row, grid::Column)
+fn neighbor_pos(Row(row): Row, Column(column): Column, dir: direction)
+    -> (Row, Column)
 {
   return match dir {
-    above => (grid::Row(row - 1), grid::Column(column)),
-    below => (grid::Row(row + 1), grid::Column(column)),
-    right => (grid::Row(row), grid::Column(column + 1)),
-    left  => (grid::Row(row), grid::Column(column - 1))
+    above => (Row(row - 1), Column(column)),
+    below => (Row(row + 1), Column(column)),
+    right => (Row(row), Column(column + 1)),
+    left  => (Row(row), Column(column - 1))
   };
 }  // fn neighbor_pos
 
@@ -56,18 +57,18 @@ fn neighbor_pos(grid::Row(row): grid::Row, grid::Column(column): grid::Column, d
  * Returns a count for how many neighbors of a cell in the grid
  * are alive.
 */
-pub fn count_neighbors(row: grid::Row, column: grid::Column, grid: &grid::Grid)
+pub fn count_neighbors(row: Row, column: Column, grid: &Grid)
     -> uint
 {
-  let (same_row, left_column)  = neighbor_pos(row, column, left, grid);
-  let (same_row, right_column) = neighbor_pos(row, column, right, grid);
-  let (above_row, same_column) = neighbor_pos(row, column, above, grid);
-  let (below_row, same_column) = neighbor_pos(row, column, below, grid);
+  let (same_row, left_column)  = neighbor_pos(row, column, left);
+  let (same_row, right_column) = neighbor_pos(row, column, right);
+  let (above_row, same_column) = neighbor_pos(row, column, above);
+  let (below_row, same_column) = neighbor_pos(row, column, below);
 
-  let (above_left_row, above_left_column) = neighbor_pos(above_row, same_column, left, grid);
-  let (above_right_row, above_right_column) = neighbor_pos(above_row, same_column, right, grid);
-  let (below_left_row, below_left_column) = neighbor_pos(below_row, same_column, left, grid);
-  let (below_right_row, below_right_column) = neighbor_pos(below_row, same_column, right, grid);
+  let (above_left_row, above_left_column) = neighbor_pos(above_row, same_column, left);
+  let (above_right_row, above_right_column) = neighbor_pos(above_row, same_column, right);
+  let (below_left_row, below_left_column) = neighbor_pos(below_row, same_column, left);
+  let (below_right_row, below_right_column) = neighbor_pos(below_row, same_column, right);
 
   let c0 = grid.cell_alive(same_row, left_column);
   let c1 = grid.cell_alive(same_row, right_column);
@@ -81,12 +82,12 @@ pub fn count_neighbors(row: grid::Row, column: grid::Column, grid: &grid::Grid)
   return c0 + c1 + c2 + c3 + c4 + c5 + c6 + c7;
 }
 
-/*pub fn print_neighbor_count(grid: &grid::Grid) {
+/*pub fn print_neighbor_count(grid: &Grid) {
   let x = grid.inner.len();
   for row in range(0, x) {
     for column in range(0, x) {
-      let r = grid::Row(row);
-      let c = grid::Column(column);
+      let r = Row(row);
+      let c = Column(column);
       let n = count_neighbors(r, c, grid);
       print!("{:u}", n);
     }
@@ -103,17 +104,17 @@ pub fn count_neighbors(row: grid::Row, column: grid::Column, grid: &grid::Grid)
 // overcrowding.
 // 4) Any dead cell with exactly three live neighbours becomes a live cell, as
 // if by reproduction.
-pub fn build_from_grid(prevg: &grid::Grid) -> grid::Grid
+pub fn build_from_grid(prevg: &Grid) -> Grid
 {
   let mut result = prevg.clone();
   for row in range(0, prevg.height()) {
     for column in range(0, prevg.width()) {
-      let ncount = count_neighbors(grid::Row(row), grid::Column(column), prevg);
-      result.inner[row][column] = grid::Cell { value: 
+      let ncount = count_neighbors(Row(row), Column(column), prevg);
+      result.inner[row][column] = Cell { value: 
         match (prevg.inner[row][column].value, ncount) {
-          (grid::dead, 3)     => grid::alive,
-          (grid::alive, 2..3) => grid::alive,
-          _                   => grid::dead
+          (dead, 3)     => alive,
+          (alive, 2..3) => alive,
+          _             => dead
         }
       };
     }
