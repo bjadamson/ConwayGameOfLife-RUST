@@ -106,17 +106,19 @@ pub fn count_neighbors(row: Row, column: Column, grid: &Grid)
 // if by reproduction.
 pub fn build_from_grid(prevg: &Grid) -> Grid
 {
+  let cell_value = |row: uint, column: uint| {
+    let ncount = count_neighbors(Row(row), Column(column), prevg);
+    let cv = match (prevg.inner[row][column].value, ncount) {
+      (dead, 3)       => alive,
+      (alive, 2..3)   => alive,
+      _               => dead
+    };
+    return Cell { value: cv };
+  };
   let mut result = prevg.clone();
   for row in range(0, prevg.height()) {
     for column in range(0, prevg.width()) {
-      let ncount = count_neighbors(Row(row), Column(column), prevg);
-      result.inner[row][column] = Cell { value: 
-        match (prevg.inner[row][column].value, ncount) {
-          (dead, 3)     => alive,
-          (alive, 2..3) => alive,
-          _             => dead
-        }
-      };
+      result.inner[row][column] = cell_value(row, column);
     }
   }
   return result;
