@@ -3,7 +3,7 @@ use grid_builder::build_from_file_contents;
 
 use std::io::Reader;
 use std::io::{File, result};
-use std::io::buffered::BufferedReader;
+use std::io::BufferedReader;
 use std::path::Path;
 use std::os;
 mod grid_builder;
@@ -13,24 +13,23 @@ fn main() {
   let args = os::args();
   let path = match args {
     [_, filename, ..] => {
-      println!("Opening file {:s}", filename);
       Path::new(filename)
     },
     _                 => fail!("Could not open file :(")
   };
 
-  let mut reader = BufferedReader::new(File::open(&path));
-
   // todo: I'm not sure how to handle a failure to open the file ..
+  let mut reader = BufferedReader::new(
+    File::open(&path).expect("WHY WON'T THIS PRINT"));
 
-  // todo: understand why to_owned() is necessary here
-  // also, is it really smart that lines() returns newlines? why?
+  // note: trim() returns a borrowed StrSlice: &StrSlice.
+  // Calling to_owned() copies the StrSlice returned from .trim() and returns an
+  // owned string ~str. Bascially we're copying the sliced values from the
+  // reader, and stuffing them into lines (using collect()).
   let lines: ~[~str] = reader.lines()
       .map(|x| x.trim().to_owned())
       .collect();
 
-  println!("lines size {:u}", lines.len());
-    
   let grid_from_file = grid_builder::build_from_file_contents(lines);
   grid_from_file.print();
 
@@ -45,4 +44,4 @@ fn main() {
     next.print();
     println!("");
   }
-}
+}  // fn main
