@@ -36,7 +36,7 @@ pub fn print(&self) {
 }  // fn print
 
 pub fn cell_alive(&self, Row(row): Row, Column(column): Column) -> uint {
-  if (row >= self.height() || column >= self.width()) {
+  if row >= self.height() || column >= self.width() {
     return 0;
   }
   return match self.inner[row][column].value {
