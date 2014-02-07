@@ -2,7 +2,7 @@ use std::io::Timer;
 use grid_builder::build_from_file_contents;
 
 use std::io::Reader;
-use std::io::{File, result};
+use std::io::File;
 use std::io::BufferedReader;
 use std::path::Path;
 use std::os;
@@ -19,8 +19,7 @@ fn main() {
   };
 
   // todo: I'm not sure how to handle a failure to open the file ..
-  let mut reader = BufferedReader::new(
-    File::open(&path).expect("WHY WON'T THIS PRINT"));
+  let mut reader = BufferedReader::new(File::open(&path));
 
   // note: trim() returns a borrowed StrSlice: &StrSlice.
   // Calling to_owned() copies the StrSlice returned from .trim() and returns an
@@ -34,7 +33,7 @@ fn main() {
   grid_from_file.print();
 
   // The fn expect() is shorthand for pattern matching on Some/None.
-  let mut timer = Timer::new().expect("Error creating timer!!");
+  let mut timer = Timer::new().unwrap();
   let mut next = grid_from_file;
   
   loop {
