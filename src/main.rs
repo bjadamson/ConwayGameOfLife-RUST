@@ -1,7 +1,6 @@
 use std::io::Timer;
 use grid_builder::build_from_file_contents;
 
-use std::io::Reader;
 use std::io::File;
 use std::io::BufferedReader;
 use std::path::Path;
