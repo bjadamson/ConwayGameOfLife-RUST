@@ -10,7 +10,7 @@ mod grid;
 
 fn main() {
   let args = os::args();
-  let path = match args {
+  let path = match args.as_slice() {
     [_, filename, ..] => {
       Path::new(filename)
     },

@@ -1,5 +1,5 @@
-extern mod extra;
-extern mod std;
+extern crate extra;
+extern crate std;
 use grid::{Row, Column, alive, dead, Cell, Grid};
 mod grid;
 
